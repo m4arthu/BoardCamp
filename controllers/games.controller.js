@@ -39,16 +39,26 @@ export async function postGames(req, res) {
 export async function getCustomers(req, res) {
    try {
       let customers
-      if (req.params.id) {
+      if (req.params.id){
          customers = await db.query(`SELECT * FROM customers WHERE id= $1`, [req.params.id])
+         customers.rows[0].birthday = dayjs(customers.rows[0].birthday).format("YYYY/MM/DD")
+         if(customers.rows[0].length === 0){
+            res.sendStatus(404)
+            return
+         }   
+         res.send(customers.rows[0]) 
       } else {
          customers = await db.query("SELECT * FROM customers")
+         if(customers.rows.length === 0){
+            res.sendStatus(404)
+            return
+         }   
+         customers.rows.map((c)=>{
+            c.birthday = dayjs(c.birthday).format("YYYY/MM/DD")
+         })
+         res.send(customers.rows)
       }
-      if(customers.rows.length == 0){
-         res.sendStatus(404)
-         return
-      }
-      res.send(customers.rows)
+      
    } catch (e) {
       console.log(e)
       res.status(500).send("deu pau  no  servidor")
@@ -138,7 +148,9 @@ export async function postRentals(req, res) {
    try {
       const customer = await db.query("SELECT * FROM customers WHERE id = $1", [customerId])
       const game = await db.query("SELECT * FROM games WHERE id = $1", [gameId])
+     
       if (customer.rows.length !== 0 && game.rows.length !== 0 && daysRented > 0) {
+         console.log(dayjs().format('YYYY-MM-DD'))
          const newRent = {
             customerId: customerId,
             gameId: gameId,
