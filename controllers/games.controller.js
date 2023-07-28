@@ -1,23 +1,32 @@
 import { db } from "../database_connection/database.js";
 
-export async function getGames(req,res){
-     try {
-        const games   = await db.query("SELECT * FROM games")
-        res.send(games.rows)
-     } catch(e){
-         console.log(e)
-        res.status(500).send("deu pau  no  servidor")
-     }
+export async function getGames(req, res) {
+   try {
+      const games = await db.query("SELECT * FROM games")
+      res.send(games.rows)
+   } catch (e) {
+      console.log(e)
+      res.status(500).send("deu pau  no  servidor")
+   }
 }
 
 
-export async function postGames(req,res){
-   const {} = req.body
+export async function postGames(req, res) {
+   const { name, image, stockTotal, pricePerDay } = req.body
    try {
-      await db.query(``,[])
+      const existName = await db.query("SELECT name FROM games WHERE name = $1", [name])
+      if(existName.rows.length !== 0) {
+         res.sendStatus(409)
+         return
+      }
+      await db.query(`INSERT INTO games(name,image,"stockTotal","pricePerDay") 
+       SELECT $1,$2,$3,$4
+       WHERE NOT EXISTS (
+       SELECT 1 FROM games WHERE name = $1
+       );`, [name, image, stockTotal, pricePerDay])
       res.sendStatus(201)
-   } catch(e){
-       console.log(e)
+   } catch (e) {
+      console.log(e)
       res.status(500).send("deu pau  no  servidor")
    }
 }
