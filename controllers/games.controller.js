@@ -41,11 +41,11 @@ export async function getCustomers(req, res) {
       let customers
       if (req.params.id){
          customers = await db.query(`SELECT * FROM customers WHERE id= $1`, [req.params.id])
-         customers.rows[0].birthday = dayjs(customers.rows[0].birthday).format("YYYY/MM/DD")
          if(customers.rows[0].length === 0){
             res.sendStatus(404)
             return
-         }   
+         }
+         customers.rows[0].birthday = dayjs(customers.rows[0].birthday).format("YYYY/MM/DD")   
          res.send(customers.rows[0]) 
       } else {
          customers = await db.query("SELECT * FROM customers")
