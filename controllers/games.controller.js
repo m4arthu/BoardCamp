@@ -44,6 +44,10 @@ export async function getCustomers(req, res) {
       } else {
          customers = await db.query("SELECT * FROM customers")
       }
+      if(customers.rows.length == 0){
+         res.sendStatus(404)
+         return
+      }
       res.send(customers.rows)
    } catch (e) {
       console.log(e)
@@ -54,6 +58,9 @@ export async function getCustomers(req, res) {
 export async function postCustomers(req, res) {
    const { name, phone, cpf, birthday } = req.body
    try {
+      if (isNaN(Number(cpf))){
+         return res.sendStatus(400)
+      }
       const existName = await db.query("SELECT cpf FROM customers WHERE cpf = $1", [cpf])
       if (existName.rows.length !== 0) {
          res.sendStatus(409)
