@@ -78,7 +78,7 @@ export async function putCustomers(req, res) {
       if (existName.rows[0].cpf === cpf) {
          await db.query(`UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 
          WHERE id = $5;`, [name, phone, cpf, birthday, req.params.id])
-         res.sendStatus(201)
+         res.sendStatus(400)
       } else {
          const existCpf = await db.query("SELECT * FROM customers WHERE cpf = $1", [cpf])
          if (existCpf.rows.length > 0) {
@@ -86,7 +86,7 @@ export async function putCustomers(req, res) {
          } else {
             await db.query(`UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 
             WHERE id = $5;`, [name, phone, cpf, birthday, req.params.id])
-            res.sendStatus(201)
+            res.sendStatus(200)
          }
       }
 
