@@ -81,10 +81,13 @@ export async function postCustomers(req, res) {
 export async function putCustomers(req, res) {
    const { name, phone, cpf, birthday } = req.body
    try {
+      if (isNaN(Number(cpf))){
+         return res.sendStatus(400)
+      }
       const existName = await db.query("SELECT * FROM customers WHERE id = $1", [req.params.id])
       if (existName.rows[0].cpf === cpf) {
          await db.query(`UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4 
-         WHERE id = $5;`, [name, phone, cpf, birthday, req.params.id])
+         WHERE id = $5;`, [name, phone, cpf, dayjs(birthday).format('YYYY-MM-DD'), req.params.id])
          res.sendStatus(400)
       } else {
          const existCpf = await db.query("SELECT * FROM customers WHERE cpf = $1", [cpf])
@@ -132,7 +135,6 @@ export async function getRents(req, res) {
 
 export async function postRentals(req, res) {
    const { customerId, gameId, daysRented } = req.body
-
    try {
       const customer = await db.query("SELECT * FROM customers WHERE id = $1", [customerId])
       const game = await db.query("SELECT * FROM games WHERE id = $1", [gameId])
@@ -140,7 +142,7 @@ export async function postRentals(req, res) {
          const newRent = {
             customerId: customerId,
             gameId: gameId,
-            rentDate:  dayjs(Date.now()).format("DD/MM/YYYY"),
+            rentDate: dayjs().format('YYYY-MM-DD'),
             daysRented: daysRented,
             returnDate: null, // troca pra uma data quando já devolvido
             originalPrice: game.rows[0].pricePerDay * daysRented,
