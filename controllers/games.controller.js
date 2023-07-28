@@ -41,7 +41,8 @@ export async function getCustomers(req, res) {
       let customers
       if (req.params.id){
          customers = await db.query(`SELECT * FROM customers WHERE id= $1`, [req.params.id])
-         if(customers.rows[0].length === 0){
+         console.log(customers)
+         if(customers.rows.length === 0 ){
             res.sendStatus(404)
             return
          }
