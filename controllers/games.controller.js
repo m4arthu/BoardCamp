@@ -52,10 +52,6 @@ export async function getCustomers(req, res) {
          res.send(customers.rows[0])
       } else {
          customers = await db.query(`SELECT *,TO_CHAR(birthday,'YYYY-MM-DD') as "formatedBirthday" FROM customers`)
-         if (customers.rows.length === 0) {
-            res.sendStatus(404)
-            return
-         }
          customers.rows.forEach((r) => {
             r.birthday = r.formatedBirthday
             delete r.formatedBirthday
