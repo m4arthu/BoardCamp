@@ -72,7 +72,7 @@ export async function getCustomers(req, res) {
 export async function postCustomers(req, res) {
    const { name, phone, cpf, birthday } = req.body
    try {
-      if (isNaN(Number(cpf))){
+      if (isNaN(Number(cpf))) {
          return res.sendStatus(400)
       }
       const existName = await db.query("SELECT cpf FROM customers WHERE cpf = $1", [cpf])
@@ -123,36 +123,44 @@ export async function putCustomers(req, res) {
 // rentals controllers
 
 export async function getRents(req, res) {
-try {
-   const rents = await db.query("SELECT * FROM rentals")
+   try {
+      const rents = await db.query("SELECT * FROM rentals")
 
-   for(let  i = 0; i < rents.rows.length; i++){
-      const customer =  await db.query("SELECT * FROM customers WHERE id = $1",[rents.rows[i].customerId])
-      const games = await db.query("SELECT * from games WHERE id = $1",[rents.rows[i].gameId])
-      rents.rows[i].customer =  {
-         id: rents.rows[i].customerId,
-         name: customer.rows[0].name
+      for (let i = 0; i < rents.rows.length; i++) {
+         const customer = await db.query("SELECT * FROM customers WHERE id = $1", [rents.rows[i].customerId])
+         const games = await db.query("SELECT * from games WHERE id = $1", [rents.rows[i].gameId])
+         rents.rows[i].customer = {
+            id: rents.rows[i].customerId,
+            name: customer.rows[0].name
+         }
+         rents.rows[i].game = {
+            id: rents.rows[i].gameId,
+            name: games.rows[0].name
+         }
       }
-      rents.rows[i].game =  {
-         id: rents.rows[i].gameId,
-         name: games.rows[0].name
-      }
+
+
+      res.send(rents.rows)
+   } catch (e) {
+      console.log(e)
+      res.status(500).send("deu pau  no  servidor")
    }
-
-
-   res.send(rents.rows)
-} catch (e) {
-   console.log(e)
-   res.status(500).send("deu pau  no  servidor")
-}
 }
 
 export async function postRentals(req, res) {
    const { customerId, gameId, daysRented } = req.body
+    if(isNaN(Number(daysRented))){
+      res.sendStatus(400)
+      return
+    }
    try {
       const customer = await db.query("SELECT * FROM customers WHERE id = $1", [customerId])
       const game = await db.query("SELECT * FROM games WHERE id = $1", [gameId])
-
+      const rentals = await db.query("SELECT * FROM rentals WHERE id=$1", [gameId])
+      if (game.rows[0].stockTotal - rentals.rows.length >= 0) {
+         res.sendStatus(400)
+         return
+      }
       if (customer.rows.length !== 0 && game.rows.length !== 0 && daysRented > 0) {
          console.log(dayjs().format('YYYY-MM-DD'))
          const newRent = {
@@ -200,5 +208,31 @@ export async function deleteRental(req, res) {
 }
 
 export async function putRentals(req, res) {
-
+   const { id } = req.params
+   try {
+      const rental = await db.query("SELECT *  FROM rentals WHERE id = $1", [id])
+      if (rental.rows.length === 0) {
+         res.sendStatus(404)
+         return
+      }
+      console.log(rental.rows[0].returnDate)
+      if (rental.rows[0].returnDate !== null) {
+         res.sendStatus(400)
+         return
+      }
+   
+      const diffInMs = new Date(rental.rows[0].rentDate) - new Date(dayjs().format("YYYY-MM-DD"))
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+      const game = await db.query("SELECT * FROM games WHERE id = $1",[rental.rows[0].gameId])
+      var delayFee = 0
+      const  returnDate = dayjs().format("YYYY-MM-DD")
+      if (diffInDays > 0){
+      delayFee = Math.ceil(diffInDays) *  game.rows[0].pricePerDay
+      }
+      await db.query(`UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`, [returnDate,delayFee,id])
+      res.sendStatus(200)
+   } catch(e){
+      console.log(e)
+      res.status(500).send(e)
+   }
 }

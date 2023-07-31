@@ -23,5 +23,5 @@ app.put("/customers/:id", validateSchema(customersSchema), putCustomers)
 app.get("/rentals", getRents)
 app.post("/rentals", validateSchema(rentalsSchema),postRentals)
 app.delete("/rentals/:id",deleteRental)
-app.put("/rentals/:id/return",putRentals)
+app.post("/rentals/:id/return",putRentals)
 export const router = app
