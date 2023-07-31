@@ -7,7 +7,7 @@ import dayjs from "dayjs"
 // games controllers
 export async function getGames(req, res) {
    try {
-      const games = await db.query("SELECT *, FROM games")
+      const games = await db.query("SELECT * FROM games")
       res.send(games.rows)
    } catch (e) {
       console.log(e)
@@ -166,7 +166,7 @@ export async function postRentals(req, res) {
          }
          await db.query(`INSERT INTO rentals
          ("customerId","gameId","rentDate","daysRented","returnDate","originalPrice","delayFee")
-         VALUES ($1,$2,TO_CHAR($3,'YYYY-MM-DD'),$4,$5,$6,$7)`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
             [newRent.customerId, newRent.gameId, newRent.rentDate,
             newRent.daysRented, newRent.returnDate, newRent.originalPrice, newRent.delayFee])
          res.sendStatus(201)
