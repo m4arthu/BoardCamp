@@ -149,10 +149,6 @@ export async function getRents(req, res) {
 
 export async function postRentals(req, res) {
    const { customerId, gameId, daysRented } = req.body
-    if(isNaN(Number(daysRented))){
-      res.sendStatus(400)
-      return
-    }
    try {
       const customer = await db.query("SELECT * FROM customers WHERE id = $1", [customerId])
       const game = await db.query("SELECT * FROM games WHERE id = $1", [gameId])
