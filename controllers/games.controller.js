@@ -7,7 +7,7 @@ import dayjs from "dayjs"
 // games controllers
 export async function getGames(req, res) {
    try {
-      const games = await db.query("SELECT * FROM games")
+      const games = await db.query("SELECT *, FROM games")
       res.send(games.rows)
    } catch (e) {
       console.log(e)
@@ -72,7 +72,7 @@ export async function getCustomers(req, res) {
 export async function postCustomers(req, res) {
    const { name, phone, cpf, birthday } = req.body
    try {
-      if (isNaN(Number(cpf))) {
+      if (isNaN(Number(cpf))){
          return res.sendStatus(400)
       }
       const existName = await db.query("SELECT cpf FROM customers WHERE cpf = $1", [cpf])
@@ -81,7 +81,7 @@ export async function postCustomers(req, res) {
          return
       }
       await db.query(`INSERT INTO customers(name, phone, cpf, birthday) 
-       SELECT $1,$2,$3,TO_CHAR($4,'YYYY-MM-DD')
+       SELECT $1,$2,$3,$4
        WHERE NOT EXISTS (
        SELECT 1 FROM customers WHERE cpf = $1
        );`, [name, phone, cpf, birthday])
@@ -123,28 +123,28 @@ export async function putCustomers(req, res) {
 // rentals controllers
 
 export async function getRents(req, res) {
-   try {
-      const rents = await db.query("SELECT * FROM rentals")
+try {
+   const rents = await db.query("SELECT * FROM rentals")
 
-      for (let i = 0; i < rents.rows.length; i++) {
-         const customer = await db.query("SELECT * FROM customers WHERE id = $1", [rents.rows[i].customerId])
-         const games = await db.query("SELECT * from games WHERE id = $1", [rents.rows[i].gameId])
-         rents.rows[i].customer = {
-            id: rents.rows[i].customerId,
-            name: customer.rows[0].name
-         }
-         rents.rows[i].game = {
-            id: rents.rows[i].gameId,
-            name: games.rows[0].name
-         }
+   for(let  i = 0; i < rents.rows.length; i++){
+      const customer =  await db.query("SELECT * FROM customers WHERE id = $1",[rents.rows[i].customerId])
+      const games = await db.query("SELECT * from games WHERE id = $1",[rents.rows[i].gameId])
+      rents.rows[i].customer =  {
+         id: rents.rows[i].customerId,
+         name: customer.rows[0].name
       }
-
-
-      res.send(rents.rows)
-   } catch (e) {
-      console.log(e)
-      res.status(500).send("deu pau  no  servidor")
+      rents.rows[i].game =  {
+         id: rents.rows[i].gameId,
+         name: games.rows[0].name
+      }
    }
+
+
+   res.send(rents.rows)
+} catch (e) {
+   console.log(e)
+   res.status(500).send("deu pau  no  servidor")
+}
 }
 
 export async function postRentals(req, res) {
