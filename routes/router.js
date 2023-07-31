@@ -4,7 +4,9 @@ import {
     getCustomers,
     postCustomers, putCustomers,
     getRents,
-    postRentals
+    postRentals,
+    deleteRental,
+    putRentals
 }
     from "../controllers/games.controller.js"
 import { validateSchema } from "../middleweres/validateSchema.js"
@@ -20,5 +22,6 @@ app.post("/customers", validateSchema(customersSchema), postCustomers)
 app.put("/customers/:id", validateSchema(customersSchema), putCustomers)
 app.get("/rentals", getRents)
 app.post("/rentals", validateSchema(rentalsSchema),postRentals)
-
+app.delete("/rentals/:id",deleteRental)
+app.put("/rentals/:id/return",putRentals)
 export const router = app
